@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/previewImageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scaleType="fitCenter"
+        android:contentDescription="사진 미리보기" />
+
+    <Button
+        android:id="@+id/btnClaimReward"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="보상 받기"
+        android:enabled="false"
+        android:backgroundTint="#FFF7D1"
+        android:textColor="#5D7755"
+        android:textStyle="bold"/>
+
+    <!-- 하단 탭바 -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:background="#FFFFFF"
+        android:layout_margin="8dp"
+        android:padding="6dp"
+        android:elevation="10dp"
+        android:clipToPadding="false"
+        android:backgroundTint="#FFFFFF"
+        android:backgroundTintMode="src_in"
+        android:weightSum="5"
+        android:gravity="center">
+
+        <ImageButton
+            android:id="@+id/tab1Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:contentDescription="탭1"
+            android:src="@drawable/ic_home"/>
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab2Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_running"
+            android:background="@drawable/bottom_tab_selector"
+            android:contentDescription="탭 2" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab3Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:contentDescription="탭3"
+            android:src="@drawable/ic_quest" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab4Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:contentDescription="탭4"
+            android:src="@drawable/ic_inventory" />
+
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/tab6Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:contentDescription="탭6"
+            android:src="@drawable/ic_mypage" />
+    </LinearLayout>
+</LinearLayout>
