@@ -1,16 +1,16 @@
-# 9/7 수정사항
+# 0907
 ### 1km 러닝 인증 사진 퀘스트 활성화 수정   
-
 - 오류 수정 코드는 09.04에 주원님이 톡방에 올려주신 전체 프로젝트 파일 기반으로 수정한 점 참고 부탁드립니다.  
 추가적으로 필요한 수정 사항이 있다면 연락주세요!
 
-- 수정 코드를 제외한 이전 수정 사항은 hyegyeong 레포에 업로드 되어 있습니다.   
-
+- 수정 코드를 제외한 이전 수정 사항은 hyegyeong 레포에 업로드 되어 있습니다.
+  
 <details>
   <summary>AndroidManifest.xml</summary>
   
   ##
-- <activity android:name=".EditProfileActivity" android:exported="true" 아래에
+  - <activity android:name=".EditProfileActivity" android:exported="true" 아래에
+
 ```
 <activity android:name=".PhotoPreviewActivity" android:exported="true" />
 ```
@@ -20,7 +20,8 @@
   <summary>build.gradle.kts(:app)</summary>
 
   ##
-  - dependencies {} 안에
+   - dependencies {} 안에
+
   ```
 // ML Kit 이미지 라벨링
     implementation("com.google.mlkit:image-labeling:17.0.9")
@@ -33,6 +34,7 @@
 
   ##
   - public class Tab3Activity extends AppCompatActivity {}안에서
+
 ```
 private Button btnClaimP1, btnClaimP2;
 ```
@@ -41,9 +43,11 @@ private Button btnClaimP1, btnClaimP2;
 private Button btnQuestP1, btnQuestP2;
 ```
 로 변경
+
 ##
 - protected void onCreate()내부   
 boxRewardP2 = findViewById(R.id.boxRewardP2); 아래에
+
 ```
 btnClaimP1 = findViewById(R.id.btnClaimP1);
         btnClaimP2 = findViewById(R.id.btnClaimP2);
@@ -98,7 +102,8 @@ btnQuestP1.setEnabled(true);
             ensureCameraPermissionThenCapture();
         });
 ```
-로 변경
+로 변경   
+
 ##
 ```
     //보상 성공 시 UI 업데이트 (신규)
@@ -169,7 +174,199 @@ private void handleCameraQuestRewardUI(int questNumber) {
             if (pb != null) pb.setProgress(100);
 
             Button btn = findViewById(btnId);
-            if (btn != n가
+            if (btn != null) {
+                btn.setEnabled(false);
+                btn.setText("완료");
+            }
+
+            Toast.makeText(this, "카메라 퀘스트 보상을 받았습니다!", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.e("CameraQuestUI", "UI update failed: " + e.getMessage());
+        }
+    }
+```
+로 변경
+</details>
+
+<details>
+  <summary>PhotoPreviewActivity.java</summary>
+
+  ##
+  - 전체 수정
+  
+  ```
+  package kr.ac.hs.farm;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.label.ImageLabel;
+import com.google.mlkit.vision.label.ImageLabeler;
+import com.google.mlkit.vision.label.ImageLabeling;
+import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
+
+public class PhotoPreviewActivity extends AppCompatActivity {
+
+    private ImageView previewImageView;
+    private Button btnClaimReward;
+    private Uri photoUri;
+    private int questNumber;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_photopreview);
+
+        // XML 뷰 초기화
+        previewImageView = findViewById(R.id.previewImageView);
+        btnClaimReward = findViewById(R.id.btnClaimReward);
+
+        // Intent에서 전달된 사진과 퀘스트 번호 받기
+        Intent intent = getIntent();
+        photoUri = intent.getParcelableExtra("photoUri");
+        questNumber = intent.getIntExtra("questNumber", -1);
+
+        // 사진 미리보기 표시
+        if (photoUri != null) {
+            previewImageView.setImageURI(photoUri);
+
+            if (questNumber == 101) {
+                // ★ CHANGED: p1번은 "촬영만 하면" 보상 가능
+                btnClaimReward.setEnabled(true);
+
+            } else if (questNumber == 102) {
+                // ★ CHANGED: p2번은 ML Kit 라벨링 후 식물/나무일 때 활성화
+                btnClaimReward.setEnabled(false);
+                analyzePhotoForQuest102(photoUri);
+            }
+        } else {
+            Toast.makeText(this, "사진 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show();
+        }
+
+        // 보상 버튼 클릭 이벤트
+        btnClaimReward.setOnClickListener(v -> {
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra("questNumber", questNumber);
+            resultIntent.putExtra("rewardResult", "success");
+            setResult(RESULT_OK, resultIntent);
+            finish();
+        });
+
+        findViewById(R.id.tab1Button).setOnClickListener(view -> startActivity(new Intent(this, MainActivity.class)));
+        findViewById(R.id.tab2Button).setOnClickListener(view -> startActivity(new Intent(this, Tab2Activity.class)));
+        findViewById(R.id.tab3Button).setOnClickListener(view -> startActivity(new Intent(this, Tab3Activity.class)));
+        findViewById(R.id.tab4Button).setOnClickListener(view -> startActivity(new Intent(this, Tab4Activity.class)));
+        findViewById(R.id.tab6Button).setOnClickListener(view -> startActivity(new Intent(this, Tab6Activity.class)));
+    }
+
+    // P2 (102번) 퀘스트: ML Kit으로 식물 판별
+    private void analyzePhotoForQuest102(Uri uri) {
+        try {
+            InputImage image = InputImage.fromFilePath(this, uri);
+
+            ImageLabeler labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS);
+
+            labeler.process(image)
+                    .addOnSuccessListener(labels -> {
+                        boolean foundPlant = false;
+                        for (ImageLabel label : labels) {
+                            String text = label.getText();
+                            float confidence = label.getConfidence();
+                            if (text.equalsIgnoreCase("plant") || text.equalsIgnoreCase("flower") || text.equalsIgnoreCase("tree")
+                                    || text.equalsIgnoreCase("leaf")) {
+                                foundPlant = true;
+                                break;
+                            }
+                        }
+
+                        if (foundPlant) {
+                            btnClaimReward.setEnabled(true);
+                            Toast.makeText(this, "식물이 감지되었습니다! 보상을 받아주세요.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "식물이 감지되지 않았습니다. 다시 촬영해주세요.", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "이미지 분석 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "분석 오류 발생: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+}
+```
+</details>
+
+<details>
+<summary> activity_tab3.xml </summary>
+ 
+## 카메라 퀘스트 영역
+
+  ```
+<Button
+                            android:id="@+id/btnClaimP1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:backgroundTint="#FFF7D1"
+                            android:elevation="2dp"
+                            android:enabled="false"
+                            android:text="사진찍기"
+                            android:textColor="#5D7755"
+                            android:textStyle="bold" />
+```
+에서
+```
+ android:id="@+id/btnQuestP1"
+```
+로 android:id 변경
+```
+android:enabled="false"
+```
+삭제
+
+```
+<Button
+                            android:id="@+id/btnClaimP2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:backgroundTint="#FFF7D1"
+                            android:elevation="2dp"
+                            android:enabled="false"
+                            android:text="사진찍기"
+                            android:textColor="#5D7755"
+                            android:textStyle="bold" />
+```
+에서
+```
+android:id="@+id/btnQuestP2"
+```
+로 android:id 변경
+```
+android:enabled="false"
+```
+삭제
+</details>
+
+<details>
+  <summary>activity_photopreview.xml</summary>
+
+##
+  ```
+android:padding="16dp"
+```
+삭제
 ```
 <!-- 하단 탭바 -->
     <LinearLayout
@@ -250,4 +447,5 @@ private void handleCameraQuestRewardUI(int questNumber) {
             android:src="@drawable/ic_mypage" />
     </LinearLayout>
 ```
+<Button/> 아래에 하단 탭바 추가
 </details>
