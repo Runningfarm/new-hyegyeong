@@ -363,10 +363,13 @@ android:enabled="false"
   <summary>activity_photopreview.xml</summary>
 
 ##
-  ```
+- <LinearLayout 에서
+  
+```
 android:padding="16dp"
 ```
-삭제
+삭제   
+- <Button/> 아래에 하단 탭바 추가
 ```
 <!-- 하단 탭바 -->
     <LinearLayout
@@ -447,5 +450,4 @@ android:padding="16dp"
             android:src="@drawable/ic_mypage" />
     </LinearLayout>
 ```
-<Button/> 아래에 하단 탭바 추가
 </details>
