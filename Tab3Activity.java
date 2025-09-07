@@ -264,18 +264,6 @@ public class Tab3Activity extends AppCompatActivity {
                     claimButtons[8].setEnabled(true);
                 }
             }
-
-            if ("camera".equals(q.getType())) {
-                if (q.isCompleted()) {
-                    progressQuestP1.setProgress(100);
-                    btnQuestP1.setEnabled(false);
-                    btnQuestP1.setText("완료");
-                    boxRewardP1.setImageResource(R.drawable.box_opened);
-                } else {
-                    progressQuestP1.setProgress(0);
-                    btnQuestP1.setEnabled(true);
-                }
-            }
         }
     }
 
